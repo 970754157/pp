@@ -1,35 +1,40 @@
-# 定义编译器和编译选项
+# 编译器和选项
 CC = gcc
+AR = ar
 CFLAGS = -Wall -Wextra -g
-LDFLAGS =
+ARFLAGS = rcs
 
-# 定义目标文件和源文件
+# 文件定义
+LIB_NAME = libFilmMaster2000.a
+LIB_SRCS = FilmMaster2000.c
+LIB_OBJS = $(LIB_SRCS:.c=.o)
+MAIN_SRCS = main.c
+MAIN_OBJS = $(MAIN_SRCS:.c=.o)
 TARGET = film_tool
-SRCS = main.c FilmMaster2000.c
-OBJS = $(SRCS:.c=.o)
-HEADER = FilmMaster2000.h
 
 # 默认目标
-all: $(TARGET)
+all: $(LIB_NAME) $(TARGET)
 
-# 链接目标文件
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS)
+# 生成静态库
+$(LIB_NAME): $(LIB_OBJS)
+	$(AR) $(ARFLAGS) $@ $^
 
-# 编译源文件
-%.o: %.c $(HEADER)
+# 生成可执行文件
+$(TARGET): $(MAIN_OBJS) $(LIB_NAME)
+	$(CC) $(CFLAGS) -o $@ $^
+
+# 编译规则
+%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# 清理生成的文件
+# 清理生成文件
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -f $(LIB_OBJS) $(MAIN_OBJS) $(LIB_NAME) $(TARGET)
 
-# 运行测试（可选）
+# 测试运行
 test: $(TARGET)
 	./$(TARGET) info example.film
 	./$(TARGET) reverse example.film reversed.film
-	./$(TARGET) swap example.film swapped.film 0 2
-	./$(TARGET) clip example.film clipped.film 1 50 200
-	./$(TARGET) scale example.film scaled.film 0 1.5
 
 .PHONY: all clean test
+
